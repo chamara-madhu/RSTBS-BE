@@ -74,8 +74,8 @@ exports.applyForSeasonTicket = (req, res) => {
       address: fields.address[0],
       nic: fields.nic[0],
       contactNumber: fields.phone[0],
-      stations: fields.stations[0],
-      duration: fields.duration[0],
+      stations: JSON.parse(fields.stations[0]),
+      duration: JSON.parse(fields.duration[0]),
       nicImages: nicImages,
       gnCertificate,
     });
@@ -184,6 +184,17 @@ exports.acceptOrRejectPayment = (id, status, note, res) => {
 exports.getAllApplications = (res) => {
   Application.find()
     .exec()
+    .then((data) => {
+      res.status(200).json(data);
+    })
+    .catch((err) => {
+      res.status(400).json(err);
+    });
+};
+
+exports.myBookingHistory = (userId, res) => {
+  SeasonTicket.find({ userId })
+    .populate("applicationId", "stations")
     .then((data) => {
       res.status(200).json(data);
     })

@@ -19,6 +19,8 @@ router.post(
 
 router.get("/", isAuth, isAdmin, applicationController.getAllApplications);
 
+router.get("/my", isAuth, isPassenger, applicationController.myBookingHistory);
+
 router.get("/:id", isAuth, applicationController.getAnApplication);
 
 router.post(
