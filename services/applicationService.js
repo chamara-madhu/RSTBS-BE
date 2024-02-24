@@ -192,6 +192,38 @@ exports.getAllApplications = (res) => {
     });
 };
 
+exports.getPendingApplications = (res) => {
+  SeasonTicket.find({ status: APPLICATION_STATUSES.APPLICATION_PENDING })
+    .populate("applicationId", "fullName nic stations")
+    .select("amount")
+    .then((data) => {
+      res.status(200).json(data);
+    })
+    .catch((err) => {
+      res.status(400).json(err);
+    });
+};
+
+exports.getAnApplicationForReview = (id, res) => {
+  SeasonTicket.findOne({
+    _id: id,
+    status: APPLICATION_STATUSES.APPLICATION_PENDING,
+  })
+    .populate(
+      "applicationId",
+      "fullName address nic phone stations nicImages gnCertificate"
+    )
+    .select(
+      "-bankSlipImage -isApplicationResubmission -isPaymentResubmission -createdAt -updatedAt -__v"
+    )
+    .then((data) => {
+      res.status(200).json(data);
+    })
+    .catch((err) => {
+      res.status(400).json(err);
+    });
+};
+
 exports.myBookingHistory = (userId, res) => {
   SeasonTicket.find({ userId })
     .populate("applicationId", "stations")

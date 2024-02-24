@@ -21,6 +21,20 @@ router.get("/", isAuth, isAdmin, applicationController.getAllApplications);
 
 router.get("/my", isAuth, isPassenger, applicationController.myBookingHistory);
 
+router.get(
+  "/all-pending-applications",
+  isAuth,
+  isAdmin,
+  applicationController.getPendingApplications
+);
+
+router.get(
+  "/pending-application/:id",
+  isAuth,
+  isAdmin,
+  applicationController.getAnApplicationForReview
+);
+
 router.get("/:id", isAuth, applicationController.getAnApplication);
 
 router.post(

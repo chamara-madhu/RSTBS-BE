@@ -5,6 +5,8 @@ const {
   getAnApplication,
   generateQRCode,
   myBookingHistory,
+  getPendingApplications,
+  getAnApplicationForReview,
 } = require("../services/applicationService");
 
 exports.applyForSeasonTicket = (req, res) => {
@@ -23,6 +25,14 @@ exports.getAllApplications = (req, res) => {
 
 exports.myBookingHistory = (req, res) => {
   return myBookingHistory(req.user.id, res);
+};
+
+exports.getPendingApplications = (req, res) => {
+  return getPendingApplications(res);
+};
+
+exports.getAnApplicationForReview = (req, res) => {
+  return getAnApplicationForReview(req.params.id, res);
 };
 
 exports.getAnApplication = (req, res) => {
