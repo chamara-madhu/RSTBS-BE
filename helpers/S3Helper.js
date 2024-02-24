@@ -1,19 +1,21 @@
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client } = require("@aws-sdk/client-s3");
 const { Upload } = require("@aws-sdk/lib-storage");
 const { v4: uuidv4 } = require("uuid");
+const { aws } = require("../config/aws");
 
 const client = new S3Client({
   region: "ap-south-1",
   credentials: {
-    accessKeyId: "AKIAX4EF6WCXYQY4WBVD",
-    secretAccessKey: "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",
+    accessKeyId: aws.AWS_ACCESS_KEY,
+    secretAccessKey: aws.AWS_SECRET_ACCESS_KEY,
   },
 });
 
-const bucketName = "rstr-dev";
+const bucketName = aws.S3_BUCKET_NAME;
 
 exports.uploadFile = async (folder, buffer, contentType) => {
   console.log({ buffer });
+  console.log("aws.AWS_ACCESS_KEY", aws.AWS_ACCESS_KEY);
   const params = {
     Bucket: bucketName,
     Key: `${folder}/${uuidv4()}`,

@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const cors = require("cors");
+require("dotenv").config();
 
 const uri =
   "mongodb+srv://artiAdmin:Articare1@@arti.we407.mongodb.net/arti?retryWrites=true&w=majority";
