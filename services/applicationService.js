@@ -73,15 +73,9 @@ exports.applyForSeasonTicket = (req, res) => {
       fullName: fields.fullName[0],
       address: fields.address[0],
       nic: fields.nic[0],
-      contactNumber: fields.contactNumber[0],
-      stations: {
-        origin: "111",
-        destination: "123",
-      },
-      duration: {
-        start: "2024-02-05",
-        end: "2024-05-05",
-      },
+      contactNumber: fields.phone[0],
+      stations: fields.stations[0],
+      duration: fields.duration[0],
       nicImages: nicImages,
       gnCertificate,
     });
