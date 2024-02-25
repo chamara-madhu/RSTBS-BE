@@ -4,8 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
-const uri =
-  "mongodb+srv://artiAdmin:Articare1@@arti.we407.mongodb.net/arti?retryWrites=true&w=majority";
+const mongoUrl = process.env.MONGO_CONNECTION_STRING;
 
 // require("dotenv").config();
 
@@ -14,10 +13,7 @@ const app = express();
 
 // connect database
 mongoose
-  .connect(
-    "mongodb+srv://rstrsg11:rstrsg11@projects.helxlxu.mongodb.net/rstrs?retryWrites=true&w=majority" ||
-      "mongodb://localhost:27017/arti"
-  )
+  .connect(mongoUrl || "mongodb://localhost:27017/arti")
   .then(() => console.log("db is running"))
   .catch((err) => console.log(err));
 
