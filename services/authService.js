@@ -3,13 +3,14 @@ const moment = require("moment");
 const User = require("../models/userModel");
 const { secretOfKey } = require("../config/constant");
 const { USER_ROLES } = require("../config/constant");
+const { sendEmail } = require("../helpers/EmailHelper");
 
 exports.userLogin = (email, res) => {
   User.findOne({ email })
     .exec()
     .then((user) => {
       // Generate four random numbers OTP
-      const otp = "0000"; // Math.floor(1000 + Math.random() * 9000);
+      const otp = Math.floor(1000 + Math.random() * 9000); // "0000";
 
       // check email is already exist or not
       if (user) {
@@ -18,7 +19,10 @@ exports.userLogin = (email, res) => {
 
         user
           .save()
-          .then(() => {
+          .then(async () => {
+            // send email
+            await sendEmail("nlc.madhushanka@gmail.com", otp.toString());
+
             res
               .status(200)
               .json({ message: "OTP has been sent to the given email" });
@@ -63,7 +67,10 @@ exports.userSignUp = (data, res) => {
         // save to the database
         user
           .save()
-          .then(() => {
+          .then(async () => {
+            // send email
+            await sendEmail("nlc.madhushanka@gmail.com", otp.toString());
+
             res
               .status(200)
               .json({ message: "OTP has been sent to the given email" });

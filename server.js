@@ -6,8 +6,6 @@ require("dotenv").config();
 
 const mongoUrl = process.env.MONGO_CONNECTION_STRING;
 
-// require("dotenv").config();
-
 // app
 const app = express();
 
