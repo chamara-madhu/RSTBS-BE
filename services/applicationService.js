@@ -26,9 +26,6 @@ exports.applyForSeasonTicket = (req, res) => {
     };
     let gnCertificate = "";
 
-    console.log({ files });
-    console.log({ fields });
-
     if (files?.nicFS?.length) {
       try {
         const file = files.nicFS[0];
@@ -73,9 +70,15 @@ exports.applyForSeasonTicket = (req, res) => {
       fullName: fields.fullName[0],
       address: fields.address[0],
       nic: fields.nic[0],
-      contactNumber: fields.phone[0],
-      stations: JSON.parse(fields.stations[0]),
-      duration: JSON.parse(fields.duration[0]),
+      phone: fields.phone[0],
+      stations: {
+        origin: fields.origin[0],
+        destination: fields.destination[0],
+      },
+      duration: {
+        start: fields.start[0],
+        end: fields.end[0],
+      },
       nicImages: nicImages,
       gnCertificate,
     });
@@ -155,32 +158,6 @@ exports.acceptOrRejectApplication = (id, status, note, res) => {
     });
 };
 
-exports.acceptOrRejectPayment = (id, status, note, res) => {
-  Application.findOne({ _id: id })
-    .exec()
-    .then((application) => {
-      application.status = status;
-
-      if (status === APPLICATION_STATUSES.PAYMENT_REJECTED) {
-        application.note = note;
-      } else {
-        application.note = null;
-      }
-
-      application
-        .save()
-        .then((data) => {
-          res.status(200).json(data);
-        })
-        .catch((err) => {
-          res.status(400).json(err);
-        });
-    })
-    .catch((err) => {
-      res.status(400).json(err);
-    });
-};
-
 exports.getAllApplications = (res) => {
   Application.find()
     .exec()
@@ -195,7 +172,19 @@ exports.getAllApplications = (res) => {
 exports.getPendingApplications = (res) => {
   SeasonTicket.find({ status: APPLICATION_STATUSES.APPLICATION_PENDING })
     .populate("applicationId", "fullName nic stations")
-    .select("amount")
+    .select("amount duration")
+    .then((data) => {
+      res.status(200).json(data);
+    })
+    .catch((err) => {
+      res.status(400).json(err);
+    });
+};
+
+exports.getPendingPaymentApprovals = (res) => {
+  SeasonTicket.find({ status: APPLICATION_STATUSES.PAYMENT_APPROVAL_PENDING })
+    .populate("applicationId", "fullName nic stations")
+    .select("amount duration")
     .then((data) => {
       res.status(200).json(data);
     })
@@ -216,6 +205,21 @@ exports.getAnApplicationForReview = (id, res) => {
     .select(
       "-bankSlipImage -isApplicationResubmission -isPaymentResubmission -createdAt -updatedAt -__v"
     )
+    .then((data) => {
+      res.status(200).json(data);
+    })
+    .catch((err) => {
+      res.status(400).json(err);
+    });
+};
+
+exports.getAnApplicationForPaymentApprovalReview = (id, res) => {
+  SeasonTicket.findOne({
+    _id: id,
+    status: APPLICATION_STATUSES.PAYMENT_APPROVAL_PENDING,
+  })
+    .populate("applicationId", "fullName")
+    .select("bankSlipImage amount")
     .then((data) => {
       res.status(200).json(data);
     })
@@ -246,10 +250,98 @@ exports.getAnApplication = (id, res) => {
     });
 };
 
-exports.generateQRCode = async (userId, res) => {
+exports.getPendingPaymentInfo = (id, res) => {
+  SeasonTicket.findOne({ _id: id })
+    .select("_id amount")
+    .then((data) => {
+      res.status(200).json(data);
+    })
+    .catch((err) => {
+      res.status(400).json(err);
+    });
+};
+
+exports.uploadBankSlip = (req, res) => {
+  const form = new formidable.IncomingForm({
+    keepExtensions: true,
+    allowEmptyFiles: false,
+  });
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      res.status(400).json({
+        code: 1000,
+        message: err,
+      });
+    }
+
+    let bankSlipImage = "";
+
+    if (files?.bankSlip?.length) {
+      try {
+        const file = files.bankSlip[0];
+        const fileStream = readFileSync(file.filepath);
+        const key = await uploadFile("bankSlips", fileStream, file.mimetype);
+
+        bankSlipImage = key;
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    SeasonTicket.findOne({ _id: fields.id[0] })
+      .exec()
+      .then((sTicket) => {
+        sTicket.status = fields.status[0];
+        sTicket.bankSlipImage = bankSlipImage;
+
+        sTicket
+          .save()
+          .then((data) => {
+            res.status(200).json(data);
+          })
+          .catch((err) => {
+            res.status(400).json(err);
+          });
+      })
+      .catch((err) => {
+        res.status(400).json(err);
+      });
+  });
+};
+
+exports.acceptOrRejectPayment = (id, status, note, res) => {
+  SeasonTicket.findOne({ _id: id })
+    .populate("userId", "nic")
+    .then((sTicket) => {
+      sTicket.status = status;
+
+      if (status === APPLICATION_STATUSES.PAYMENT_REJECTED) {
+        sTicket.note = note;
+      } else {
+        sTicket.note = null;
+      }
+
+      console.log({ sTicket });
+
+      sTicket
+        .save()
+        .then(() => {
+          generateQRCode(sTicket.userId.nic, res);
+        })
+        .catch((err) => {
+          res.status(400).json(err);
+        });
+    })
+    .catch((err) => {
+      res.status(400).json(err);
+    });
+};
+
+const generateQRCode = async (nic, res) => {
   try {
+    console.log({ nic });
     // Generate QR code data URL
-    const qrDataUrl = await QRCode.toDataURL(userId, {
+    const qrDataUrl = await QRCode.toDataURL(nic, {
       width: 500,
       height: 500,
     });

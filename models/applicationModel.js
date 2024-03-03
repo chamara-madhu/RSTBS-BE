@@ -5,7 +5,7 @@ const applicationSchema = mongoose.Schema(
     fullName: { type: String, required: true, trim: true },
     address: { type: String, required: true, trim: true },
     nic: { type: String, required: true, trim: true },
-    contactNumber: { type: String, required: true, trim: true },
+    phone: { type: String, required: true, trim: true },
     stations: {
       origin: { type: String, required: true, trim: true },
       destination: { type: String, required: true, trim: true },

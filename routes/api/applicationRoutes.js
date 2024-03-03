@@ -12,8 +12,8 @@ router.post(
 
 router.post(
   "/accept-or-reject-application",
-  //   isAuth,
-  //   isAdmin,
+  isAuth,
+  isAdmin,
   applicationController.acceptOrRejectApplication
 );
 
@@ -29,19 +29,54 @@ router.get(
 );
 
 router.get(
+  "/all-pending-payment-approvals",
+  isAuth,
+  isAdmin,
+  applicationController.getPendingPaymentApprovals
+);
+
+router.get(
   "/pending-application/:id",
   isAuth,
   isAdmin,
   applicationController.getAnApplicationForReview
 );
 
+router.get(
+  "/pending-payment-approval/:id",
+  isAuth,
+  isAdmin,
+  applicationController.getAnApplicationForPaymentApprovalReview
+);
+
 router.get("/:id", isAuth, applicationController.getAnApplication);
 
-router.post(
-  "/generate-qr-code",
-  //   isAuth,
-  //   isAdmin,
-  applicationController.generateQRCode
+router.get(
+  "/payment-info/:id",
+  isAuth,
+  isPassenger,
+  applicationController.getPendingPaymentInfo
 );
+
+router.post(
+  "/upload-bank-slips",
+  isAuth,
+  isPassenger,
+  applicationController.uploadBankSlip
+);
+
+router.post(
+  "/accept-or-reject-payment-approval",
+  isAuth,
+  isAdmin,
+  applicationController.acceptOrRejectPayment
+);
+
+// router.post(
+//   "/generate-qr-code",
+//   isAuth,
+//   //   isAdmin,
+//   applicationController.generateQRCode
+// );
 
 module.exports = router;
