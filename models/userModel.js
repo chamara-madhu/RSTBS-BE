@@ -3,11 +3,6 @@ const { USER_ROLES } = require("../config/constant");
 
 const userSchema = mongoose.Schema(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
     fName: {
       type: String,
       required: true,

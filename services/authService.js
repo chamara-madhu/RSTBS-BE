@@ -46,7 +46,7 @@ exports.userSignUp = (data, res) => {
     .exec()
     .then((user) => {
       // Generate four random numbers OTP
-      const otp = Math.floor(1000 + Math.random() * 9000);
+      const otp = "0000"; // Math.floor(1000 + Math.random() * 9000);
 
       // check email is already exist or not
       if (user) {
