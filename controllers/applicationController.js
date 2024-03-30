@@ -27,10 +27,6 @@ exports.getAllApplications = (req, res) => {
   return getAllApplications(res);
 };
 
-exports.myBookingHistory = (req, res) => {
-  return myBookingHistory(req.user.id, res);
-};
-
 exports.getPendingApplications = (req, res) => {
   return getPendingApplications(res);
 };

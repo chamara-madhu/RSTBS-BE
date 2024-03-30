@@ -109,6 +109,8 @@ exports.verifyOtp = (email, otp, res) => {
               );
 
               const userObj = {
+                fName: user.fName,
+                lName: user.lName,
                 email: user.email,
                 role: user.role,
               };

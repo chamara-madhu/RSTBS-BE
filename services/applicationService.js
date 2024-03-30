@@ -91,10 +91,10 @@ exports.applyForSeasonTicket = (req, res) => {
           userId: req.user.id,
           applicationId: data._id,
           duration: {
-            start: "2024-02-05",
-            end: "2024-05-05",
+            start: fields.start[0],
+            end: fields.end[0],
           },
-          amount: 1000,
+          amount: fields.amount[0],
         });
 
         // save to database
@@ -220,17 +220,6 @@ exports.getAnApplicationForPaymentApprovalReview = (id, res) => {
   })
     .populate("applicationId", "fullName")
     .select("bankSlipImage amount")
-    .then((data) => {
-      res.status(200).json(data);
-    })
-    .catch((err) => {
-      res.status(400).json(err);
-    });
-};
-
-exports.myBookingHistory = (userId, res) => {
-  SeasonTicket.find({ userId })
-    .populate("applicationId", "stations")
     .then((data) => {
       res.status(200).json(data);
     })
