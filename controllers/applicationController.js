@@ -3,7 +3,6 @@ const {
   acceptOrRejectApplication,
   getAllApplications,
   getAnApplication,
-  myBookingHistory,
   getPendingApplications,
   getAnApplicationForReview,
   getPendingPaymentInfo,
@@ -11,10 +10,16 @@ const {
   getPendingPaymentApprovals,
   getAnApplicationForPaymentApprovalReview,
   acceptOrRejectPayment,
+  updateSeasonTicket,
 } = require("../services/applicationService");
 
 exports.applyForSeasonTicket = (req, res) => {
   return applyForSeasonTicket(req, res);
+};
+
+exports.updateSeasonTicket = (req, res) => {
+  console.log("first");
+  return updateSeasonTicket(req, res);
 };
 
 exports.acceptOrRejectApplication = (req, res) => {

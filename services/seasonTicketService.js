@@ -24,20 +24,30 @@ exports.myBookingHistory = (userId, res) => {
     });
 };
 
+exports.mySeasonTicket = (bookingId, res) => {
+  SeasonTicket.findOne({ _id: bookingId })
+    .populate(
+      "applicationId",
+      "fullName address nic phone stations nicImages gnCertificate"
+    )
+    .then((data) => {
+      res.status(200).json(data);
+    })
+    .catch((err) => {
+      res.status(400).json(err);
+    });
+};
+
 exports.getBookingUsage = (seasonTicketId, res) => {
-  console.log({ seasonTicketId });
   SeasonTicket.findOne({ _id: seasonTicketId })
     .then((data1) => {
-      console.log(data1);
       getAllBookingUsages(seasonTicketId)
         .then((data2) => {
-          console.log(data2);
-
           const obj = {
             start: data1.duration.start,
             end: data1.duration.end,
             status: data1.status,
-            dates: data2,
+            dates: data2.map((el) => el.date),
           };
           res.status(200).json(obj);
         })
@@ -48,5 +58,33 @@ exports.getBookingUsage = (seasonTicketId, res) => {
     .catch((err) => {
       console.log({ err });
       res.status(400).json(err);
+    });
+};
+
+exports.renewSeasonTicket = (req, res) => {
+  const { start, end, amount } = req.body;
+
+  const sTicket = new SeasonTicket({
+    userId: req.user.id,
+    // applicationId: data._id,
+    duration: {
+      start,
+      end,
+    },
+    amount,
+  });
+
+  // save to database
+  sTicket
+    .save()
+    .then((data) => {
+      res.status(200).json(data);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json({
+        code: 1000,
+        message: "Season ticket is not added successfully",
+      });
     });
 };

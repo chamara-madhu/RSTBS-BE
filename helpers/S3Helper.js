@@ -21,7 +21,7 @@ exports.uploadFile = async (folder, buffer, contentType) => {
     Key: `${folder}/${uuidv4()}`,
     Body: buffer,
     ContentType: contentType,
-    ACL: "public-read",
+    // ACL: "public-read",
   };
 
   //   new Upload({ client, params })

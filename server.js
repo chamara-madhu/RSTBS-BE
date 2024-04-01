@@ -18,6 +18,7 @@ mongoose
 // load routers
 const authRoutes = require("./routes/api/authRoutes");
 const userRoutes = require("./routes/api/userRoutes");
+const stationRoutes = require("./routes/api/stationRoutes");
 const applicationRoutes = require("./routes/api/applicationRoutes");
 const seasonTicketRoutes = require("./routes/api/seasonTicketRoutes");
 const seasonTicketUsageRoutes = require("./routes/api/seasonTicketUsageRoutes");
@@ -32,6 +33,7 @@ app.use(cors());
 // routes middleware
 app.use("/v1/api/auth", authRoutes);
 app.use("/v1/api/users", userRoutes);
+app.use("/v1/api/stations", stationRoutes);
 app.use("/v1/api/applications", applicationRoutes);
 app.use("/v1/api/season-tickets", seasonTicketRoutes);
 app.use("/v1/api/season-tickets-usage", seasonTicketUsageRoutes);

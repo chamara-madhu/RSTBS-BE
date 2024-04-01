@@ -18,6 +18,7 @@ const seasonTicketSchema = mongoose.Schema(
       end: { type: Date },
     },
     amount: { type: Number, required: true, trim: true },
+    km: { type: Number, required: true, trim: true },
     status: { type: Number, default: APPLICATION_STATUSES.APPLICATION_PENDING },
     note: { type: String, default: null },
     bankSlipImage: { type: String, default: null },

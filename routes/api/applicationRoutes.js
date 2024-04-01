@@ -10,6 +10,13 @@ router.post(
   applicationController.applyForSeasonTicket
 );
 
+router.put(
+  "/update",
+  isAuth,
+  isPassenger,
+  applicationController.updateSeasonTicket
+);
+
 router.post(
   "/accept-or-reject-application",
   isAuth,

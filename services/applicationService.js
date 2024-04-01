@@ -95,6 +95,7 @@ exports.applyForSeasonTicket = (req, res) => {
             end: fields.end[0],
           },
           amount: fields.amount[0],
+          km: fields.km[0],
         });
 
         // save to database
@@ -129,6 +130,141 @@ exports.applyForSeasonTicket = (req, res) => {
           message: "Application is not added successfully",
         });
       });
+  });
+};
+
+exports.updateSeasonTicket = (req, res) => {
+  const form = new formidable.IncomingForm({
+    keepExtensions: true,
+    allowEmptyFiles: false,
+  });
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      res.status(400).json({
+        code: 1000,
+        message: err,
+      });
+    }
+
+    let nicImages = {
+      fs: "",
+      bs: "",
+    };
+    let gnCertificate = "";
+
+    if (files?.nicFS?.length) {
+      try {
+        const file = files.nicFS[0];
+        const fileStream = readFileSync(file.filepath);
+        const key = await uploadFile("nic", fileStream, file.mimetype);
+
+        console.log({ key });
+        nicImages.fs = key;
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    if (files?.nicBS?.length) {
+      try {
+        const file = files.nicBS[0];
+        const fileStream = readFileSync(file.filepath);
+        const key = await uploadFile("nic", fileStream, file.mimetype);
+
+        console.log({ key });
+        nicImages.bs = key;
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    if (files?.gnCert?.length) {
+      try {
+        const file = files.gnCert[0];
+        const fileStream = readFileSync(file.filepath);
+        const key = await uploadFile("gnc", fileStream, file.mimetype);
+
+        console.log({ key });
+        gnCertificate = key;
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    console.log({ fields });
+
+    Application.findOne({ _id: fields.applicationId[0] })
+      .then((application) => {
+        application.fullName = fields.fullName[0];
+        application.address = fields.address[0];
+        application.nic = fields.nic[0];
+        application.phone = fields.phone[0];
+        application.stations = {
+          origin: fields.origin[0],
+          destination: fields.destination[0],
+        };
+        application.duration = {
+          start: fields.start[0],
+          end: fields.end[0],
+        };
+
+        if (files?.nicFS?.length) {
+          application.nicImages.fs = nicImages.fs;
+        }
+
+        if (files?.nicBS?.length) {
+          application.nicImages.bs = nicImages.bs;
+        }
+
+        if (files?.gnCert?.length) {
+          application.gnCertificate = gnCertificate;
+        }
+
+        // save to database
+        application
+          .save()
+          .then((data) => {
+            SeasonTicket.findOne({ _id: fields.seasonTicketId[0] })
+              .then((sTicket) => {
+                sTicket.duration = {
+                  start: fields.start[0],
+                  end: fields.end[0],
+                };
+                sTicket.amount = fields.amount[0];
+                sTicket.km = fields.km[0];
+                sTicket.status = APPLICATION_STATUSES.APPLICATION_PENDING;
+
+                // save to database
+                sTicket
+                  .save()
+                  .then((data) => {
+                    res.status(200).json(data);
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                    res.status(400).json({
+                      code: 1000,
+                      message: "Season ticket is not added successfully",
+                    });
+                  });
+              })
+              .catch((err) => {
+                console.log(err);
+                res.status(400).json({
+                  code: 1000,
+                  message: "Season ticket cannot find",
+                });
+              });
+          })
+          .catch((err) => {
+            console.log(err);
+            res.status(400).json({
+              code: 1000,
+              message: "Application is not updated successfully",
+            });
+          });
+      })
+      .catch((err) => console.log(err));
   });
 };
 
@@ -300,7 +436,7 @@ exports.uploadBankSlip = (req, res) => {
 
 exports.acceptOrRejectPayment = (id, status, note, res) => {
   SeasonTicket.findOne({ _id: id })
-    .populate("userId", "nic")
+    .populate("applicationId", "nic")
     .then((sTicket) => {
       sTicket.status = status;
 
@@ -315,7 +451,7 @@ exports.acceptOrRejectPayment = (id, status, note, res) => {
       sTicket
         .save()
         .then(() => {
-          generateQRCode(sTicket.userId.nic, res);
+          generateQRCode(sTicket.applicationId.nic, sTicket.userId, res);
         })
         .catch((err) => {
           res.status(400).json(err);
@@ -326,7 +462,7 @@ exports.acceptOrRejectPayment = (id, status, note, res) => {
     });
 };
 
-const generateQRCode = async (nic, res) => {
+const generateQRCode = async (nic, userId, res) => {
   try {
     console.log({ nic });
     // Generate QR code data URL
