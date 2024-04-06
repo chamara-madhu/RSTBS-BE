@@ -5,7 +5,7 @@ const SeasonTicket = require("../models/seasonTicketModel");
 const User = require("../models/userModel");
 const { uploadFile } = require("../helpers/S3Helper");
 const { readFileSync } = require("fs");
-const { APPLICATION_STATUSES } = require("../config/constant");
+const { APPLICATION_STATUSES, FLOWS } = require("../config/constant");
 
 exports.applyForSeasonTicket = (req, res) => {
   const form = new formidable.IncomingForm({
@@ -96,6 +96,11 @@ exports.applyForSeasonTicket = (req, res) => {
           },
           amount: fields.amount[0],
           km: fields.km[0],
+          flow: [
+            {
+              name: FLOWS.APPLY,
+            },
+          ],
         });
 
         // save to database
@@ -223,7 +228,7 @@ exports.updateSeasonTicket = (req, res) => {
         // save to database
         application
           .save()
-          .then((data) => {
+          .then(() => {
             SeasonTicket.findOne({ _id: fields.seasonTicketId[0] })
               .then((sTicket) => {
                 sTicket.duration = {
@@ -233,6 +238,12 @@ exports.updateSeasonTicket = (req, res) => {
                 sTicket.amount = fields.amount[0];
                 sTicket.km = fields.km[0];
                 sTicket.status = APPLICATION_STATUSES.APPLICATION_PENDING;
+                sTicket.flow = [
+                  ...sTicket.flow,
+                  {
+                    name: FLOWS.APPLICATION_RE_SUBMITTED,
+                  },
+                ];
 
                 // save to database
                 sTicket
@@ -276,8 +287,20 @@ exports.acceptOrRejectApplication = (id, status, note, res) => {
 
       if (status === APPLICATION_STATUSES.APPLICATION_REJECTED) {
         sTicket.note = note;
+        sTicket.flow = [
+          ...sTicket.flow,
+          {
+            name: FLOWS.APPLICATION_REJECTED,
+          },
+        ];
       } else {
         sTicket.note = null;
+        sTicket.flow = [
+          ...sTicket.flow,
+          {
+            name: FLOWS.APPLICATION_APPROVED,
+          },
+        ];
       }
 
       sTicket
@@ -418,6 +441,12 @@ exports.uploadBankSlip = (req, res) => {
       .then((sTicket) => {
         sTicket.status = fields.status[0];
         sTicket.bankSlipImage = bankSlipImage;
+        sTicket.flow = [
+          ...sTicket.flow,
+          {
+            name: FLOWS.BANK_DEPOSIT_SLIP_UPLOADED_FOR_APPROVAL,
+          },
+        ];
 
         sTicket
           .save()
@@ -442,16 +471,29 @@ exports.acceptOrRejectPayment = (id, status, note, res) => {
 
       if (status === APPLICATION_STATUSES.PAYMENT_REJECTED) {
         sTicket.note = note;
+        sTicket.flow = [
+          ...sTicket.flow,
+          {
+            name: FLOWS.PAYMENT_REJECTED,
+          },
+        ];
       } else {
         sTicket.note = null;
+        sTicket.flow = [
+          ...sTicket.flow,
+          {
+            name: FLOWS.PAYMENT_APPROVED,
+          },
+          {
+            name: FLOWS.SEASON_TICKET_ACTIVATED_AND_QR_GENERATED,
+          },
+        ];
       }
-
-      console.log({ sTicket });
 
       sTicket
         .save()
         .then(() => {
-          generateQRCode(sTicket.applicationId.nic, sTicket.userId, res);
+          this.generateQRCode(sTicket.userId, res);
         })
         .catch((err) => {
           res.status(400).json(err);
@@ -462,15 +504,14 @@ exports.acceptOrRejectPayment = (id, status, note, res) => {
     });
 };
 
-const generateQRCode = async (nic, userId, res) => {
+exports.generateQRCode = async (userId, res) => {
   try {
-    console.log({ nic });
+    console.log({ userId });
     // Generate QR code data URL
-    const qrDataUrl = await QRCode.toDataURL(nic, {
+    const qrDataUrl = await QRCode.toDataURL(userId, {
       width: 500,
       height: 500,
     });
-    console.log({ qrDataUrl });
 
     // Extract base64 data from data URL
     const base64Data = qrDataUrl.replace(/^data:image\/png;base64,/, "");

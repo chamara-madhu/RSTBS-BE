@@ -11,6 +11,7 @@ const {
   getAnApplicationForPaymentApprovalReview,
   acceptOrRejectPayment,
   updateSeasonTicket,
+  generateQRCode,
 } = require("../services/applicationService");
 
 exports.applyForSeasonTicket = (req, res) => {
@@ -18,7 +19,6 @@ exports.applyForSeasonTicket = (req, res) => {
 };
 
 exports.updateSeasonTicket = (req, res) => {
-  console.log("first");
   return updateSeasonTicket(req, res);
 };
 
@@ -66,8 +66,8 @@ exports.acceptOrRejectPayment = (req, res) => {
   return acceptOrRejectPayment(id, status, note, res);
 };
 
-// exports.generateQRCode = (req, res) => {
-//   const { userId } = req.body;
+exports.generateQRCode = (req, res) => {
+  const { userId } = req.body;
 
-//   return generateQRCode(userId, res);
-// };
+  return generateQRCode(userId, res);
+};

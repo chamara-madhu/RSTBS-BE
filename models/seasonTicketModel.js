@@ -22,8 +22,12 @@ const seasonTicketSchema = mongoose.Schema(
     status: { type: Number, default: APPLICATION_STATUSES.APPLICATION_PENDING },
     note: { type: String, default: null },
     bankSlipImage: { type: String, default: null },
-    isApplicationResubmission: { type: Boolean, default: false },
-    isPaymentResubmission: { type: Boolean, default: false },
+    flow: [
+      {
+        name: { type: String, required: true },
+        date: { type: Date, default: Date.now },
+      },
+    ],
   },
   {
     timestamps: true,

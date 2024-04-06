@@ -77,11 +77,11 @@ router.post(
   applicationController.acceptOrRejectPayment
 );
 
-// router.post(
-//   "/generate-qr-code",
-//   isAuth,
-//   //   isAdmin,
-//   applicationController.generateQRCode
-// );
+router.post(
+  "/generate-qr-code",
+  // isAuth,
+  //   isAdmin,
+  applicationController.generateQRCode
+);
 
 module.exports = router;
