@@ -7,6 +7,7 @@ const {
   createCheckoutSession,
   activateSeasonTicket,
   getActiveSeasonTicket,
+  getRecentSeasonTicket,
 } = require("../services/seasonTicketService");
 
 exports.calculateTicketFee = (req, res) => {
@@ -42,4 +43,8 @@ exports.renewSeasonTicket = (req, res) => {
 
 exports.getActiveSeasonTicket = (req, res) => {
   return getActiveSeasonTicket(req.params.userId, res);
+};
+
+exports.getRecentSeasonTicket = (req, res) => {
+  return getRecentSeasonTicket(req.user.id, res);
 };

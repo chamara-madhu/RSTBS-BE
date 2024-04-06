@@ -291,6 +291,7 @@ exports.acceptOrRejectApplication = (id, status, note, res) => {
           ...sTicket.flow,
           {
             name: FLOWS.APPLICATION_REJECTED,
+            note: note,
           },
         ];
       } else {
@@ -464,8 +465,8 @@ exports.uploadBankSlip = (req, res) => {
 };
 
 exports.acceptOrRejectPayment = (id, status, note, res) => {
+  console.log({ id, status, note });
   SeasonTicket.findOne({ _id: id })
-    .populate("applicationId", "nic")
     .then((sTicket) => {
       sTicket.status = status;
 
@@ -475,6 +476,7 @@ exports.acceptOrRejectPayment = (id, status, note, res) => {
           ...sTicket.flow,
           {
             name: FLOWS.PAYMENT_REJECTED,
+            note,
           },
         ];
       } else {
@@ -493,7 +495,13 @@ exports.acceptOrRejectPayment = (id, status, note, res) => {
       sTicket
         .save()
         .then(() => {
-          this.generateQRCode(sTicket.userId, res);
+          if (status === APPLICATION_STATUSES.ACTIVE) {
+            console.log("sTicket.userId", sTicket.userId);
+            console.log("sTicket.userId", sTicket.userId.toString());
+            this.generateQRCode(sTicket.userId.toString(), res);
+          } else {
+            res.status(200).json("Payment rejected");
+          }
         })
         .catch((err) => {
           res.status(400).json(err);

@@ -53,4 +53,11 @@ router.get(
   seasonTicketController.getActiveSeasonTicket
 );
 
+router.get(
+  "/recent/ticket",
+  isAuth,
+  isPassenger,
+  seasonTicketController.getRecentSeasonTicket
+);
+
 module.exports = router;

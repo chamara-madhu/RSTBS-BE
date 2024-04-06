@@ -13,6 +13,7 @@ exports.APPLICATION_STATUSES = {
   APPLICATION_REJECTED: 3,
   ACTIVE: 4,
   PAYMENT_REJECTED: 5,
+  EXPIRED: 6,
 };
 
 exports.FLOWS = {
@@ -27,4 +28,5 @@ exports.FLOWS = {
   SEASON_TICKET_ACTIVATED_AND_QR_GENERATED:
     "Season ticket activated and QR code generated",
   PAYMENT_RE_SUBMITTED: "Payment re-submitted",
+  APPLY_FOR_RENEW: "Apply for renew",
 };
