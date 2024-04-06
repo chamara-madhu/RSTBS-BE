@@ -1,7 +1,16 @@
-const { userLogin, verifyOtp, userSignUp } = require("../services/authService");
+const {
+  userLogin,
+  verifyOtp,
+  userSignUp,
+  checkerLogin,
+} = require("../services/authService");
 
 exports.userLogin = (req, res) => {
   return userLogin(req.body.email, res);
+};
+
+exports.checkerLogin = (req, res) => {
+  return checkerLogin(req.body.email, res);
 };
 
 exports.userSignUp = (req, res) => {

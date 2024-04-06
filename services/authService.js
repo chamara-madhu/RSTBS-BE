@@ -5,39 +5,141 @@ const { secretOfKey } = require("../config/constant");
 const { USER_ROLES } = require("../config/constant");
 const { sendEmail } = require("../helpers/EmailHelper");
 
+const sendOTP = (user, res) => {
+  const otp = "0000"; // Math.floor(1000 + Math.random() * 9000);
+  user.otp = otp.toString();
+  user.otpExpireAt = moment().add(5, "minutes").toDate();
+
+  user
+    .save()
+    .then(async () => {
+      // send email
+      // await sendEmail(user.email, otp.toString());
+
+      res.status(200).json({ message: "OTP has been sent to the given email" });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json({ code: 1000, message: "User is not updated" });
+    });
+};
+
 exports.userLogin = (email, res) => {
   User.findOne({ email })
     .exec()
     .then((user) => {
-      // Generate four random numbers OTP
-      const otp = "0000"; // Math.floor(1000 + Math.random() * 9000);
-
-      // check email is already exist or not
       if (user) {
-        user.otp = otp.toString();
-        user.otpExpireAt = moment().add(5, "minutes").toDate();
-
-        user
-          .save()
-          .then(async () => {
-            // send email
-            await sendEmail("nlc.madhushanka@gmail.com", otp.toString());
-
-            res
-              .status(200)
-              .json({ message: "OTP has been sent to the given email" });
-          })
-          .catch((err) => {
-            console.log(err);
-            res
-              .status(400)
-              .json({ code: 1100, message: "User is not updated" });
-          });
+        sendOTP(user, res);
       } else {
-        res.status(400).json({ code: 1100, message: "User is not exist" });
+        res.status(400).json({ code: 1100, message: "User does not exist" });
       }
+    })
+    .catch((err) => {
+      console.log(err);
+      res
+        .status(400)
+        .json({ code: 1000, message: "Error occurred while finding user" });
     });
 };
+
+exports.checkerLogin = (email, res) => {
+  User.findOne({ email })
+    .exec()
+    .then((user) => {
+      if (!user) {
+        return res
+          .status(400)
+          .json({ code: 1100, message: "User does not exist" });
+      }
+
+      if (user.role !== USER_ROLES.CHECKER) {
+        return res
+          .status(400)
+          .json({ code: 1200, message: "User access denied" });
+      }
+
+      sendOTP(user, res);
+    })
+    .catch((err) => {
+      console.log(err);
+      res
+        .status(400)
+        .json({ code: 1000, message: "Error occurred while finding user" });
+    });
+};
+
+// exports.userLogin = (email, res) => {
+//   User.findOne({ email })
+//     .exec()
+//     .then((user) => {
+//       // Generate four random numbers OTP
+//       const otp = "0000"; // Math.floor(1000 + Math.random() * 9000);
+
+//       // check email is already exist or not
+//       if (user) {
+//         user.otp = otp.toString();
+//         user.otpExpireAt = moment().add(5, "minutes").toDate();
+
+//         user
+//           .save()
+//           .then(async () => {
+//             // send email
+//             // await sendEmail("nlc.madhushanka@gmail.com", otp.toString());
+
+//             res
+//               .status(200)
+//               .json({ message: "OTP has been sent to the given email" });
+//           })
+//           .catch((err) => {
+//             console.log(err);
+//             res
+//               .status(400)
+//               .json({ code: 1100, message: "User is not updated" });
+//           });
+//       } else {
+//         res.status(400).json({ code: 1100, message: "User is not exist" });
+//       }
+//     });
+// };
+
+// exports.checkerLogin = (email, res) => {
+//   User.findOne({ email })
+//     .exec()
+//     .then((user) => {
+//       if (user.role !== USER_ROLES.CHECKER)
+//         return res
+//           .status(400)
+//           .json({ code: 1100, message: "User access denied" });
+
+//       // Generate four random numbers OTP
+//       const otp = "0000"; // Math.floor(1000 + Math.random() * 9000);
+
+//       // check email is already exist or not
+//       if (user) {
+//         user.otp = otp.toString();
+//         user.otpExpireAt = moment().add(5, "minutes").toDate();
+
+//         user
+//           .save()
+//           .then(async () => {
+//             // send email
+//             // await sendEmail("nlc.madhushanka@gmail.com", otp.toString());
+
+//             res
+//               .status(200)
+//               .json({ message: "OTP has been sent to the given email" });
+//           })
+//           .catch((err) => {
+//             console.log(err);
+//             res
+//               .status(400)
+//               .json({ code: 1100, message: "User is not updated" });
+//           });
+//       } else {
+//         res.status(400).json({ code: 1100, message: "User is not exist" });
+//       }
+//     });
+// };
 
 exports.userSignUp = (data, res) => {
   const { fName, lName, email } = data;
@@ -77,7 +179,7 @@ exports.userSignUp = (data, res) => {
           })
           .catch((err) => {
             console.log(err);
-            res.status(400).json({ code: 1100, message: "User is not added" });
+            res.status(400).json({ code: 1000, message: "User is not added" });
           });
       }
     });
@@ -89,7 +191,7 @@ exports.verifyOtp = (email, otp, res) => {
     .then((user) => {
       if (user.otp === otp) {
         if (!moment(user.otpExpireAt).isAfter(moment())) {
-          res.status(400).json({ code: 1100, message: "OTP has expired" });
+          res.status(400).json({ code: 1200, message: "OTP has expired" });
         } else {
           user.otp = null;
           user.otpExpireAt = null;
@@ -121,7 +223,7 @@ exports.verifyOtp = (email, otp, res) => {
               console.log(err);
               res
                 .status(400)
-                .json({ code: 1100, message: "User is not updated" });
+                .json({ code: 1300, message: "User is not updated" });
             });
         }
       } else {
@@ -130,6 +232,6 @@ exports.verifyOtp = (email, otp, res) => {
     })
     .catch((err) => {
       console.log(err);
-      res.status(400).json({ code: 1100, message: "Invalid OTP" });
+      res.status(400).json({ code: 1000, message: "Invalid OTP" });
     });
 };

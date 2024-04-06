@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const authController = require("../../controllers/authController");
-const { isAuth } = require("../../auth-middleware/check");
 
 router.post("/login", authController.userLogin);
+
+router.post("/checker-login", authController.checkerLogin);
 
 router.post("/sign-up", authController.userSignUp);
 
