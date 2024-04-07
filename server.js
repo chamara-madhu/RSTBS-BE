@@ -22,6 +22,7 @@ const stationRoutes = require("./routes/api/stationRoutes");
 const applicationRoutes = require("./routes/api/applicationRoutes");
 const seasonTicketRoutes = require("./routes/api/seasonTicketRoutes");
 const seasonTicketUsageRoutes = require("./routes/api/seasonTicketUsageRoutes");
+const dashboardRoutes = require("./routes/api/dashboardRoutes");
 
 // Body-parser middleware
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -37,6 +38,7 @@ app.use("/v1/api/stations", stationRoutes);
 app.use("/v1/api/applications", applicationRoutes);
 app.use("/v1/api/season-tickets", seasonTicketRoutes);
 app.use("/v1/api/season-tickets-usage", seasonTicketUsageRoutes);
+app.use("/v1/api/dashboard", dashboardRoutes);
 
 // port
 const PORT = process.env.PORT || 8000;

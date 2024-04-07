@@ -14,8 +14,6 @@ const client = new S3Client({
 const bucketName = aws.S3_BUCKET_NAME;
 
 exports.uploadFile = async (folder, buffer, contentType) => {
-  console.log({ buffer });
-  console.log("aws.AWS_ACCESS_KEY", aws.AWS_ACCESS_KEY);
   const params = {
     Bucket: bucketName,
     Key: `${folder}/${uuidv4()}`,
@@ -23,21 +21,8 @@ exports.uploadFile = async (folder, buffer, contentType) => {
     ContentType: contentType,
     // ACL: "public-read",
   };
-
-  //   new Upload({ client, params })
-  //     .done()
-  //     .then((data) => {
-  //       console.log({ data });
-  //       //  form.emit('data', { name: "complete", value: data });
-  //     })
-  //     .catch((err) => {
-  //       //  form.emit('error', err);
-  //     });
   try {
     const data = await new Upload({ client, params }).done();
-    //   const data = await client.send(new PutObjectCommand(params));
-
-    console.log("Successfully uploaded data to " + bucketName);
     return data?.Key || "";
   } catch (err) {
     console.log("Error uploading file:", err);
