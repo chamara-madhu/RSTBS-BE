@@ -5,6 +5,7 @@ const {
   isAuth,
   isPassenger,
   isChecker,
+  isAdmin,
 } = require("../../auth-middleware/check");
 
 router.post(
@@ -58,6 +59,13 @@ router.get(
   isAuth,
   isPassenger,
   seasonTicketController.getRecentSeasonTicket
+);
+
+router.get(
+  "/all/tickets",
+  isAuth,
+  isAdmin,
+  seasonTicketController.getAllSeasonTicket
 );
 
 module.exports = router;

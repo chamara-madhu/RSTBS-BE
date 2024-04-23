@@ -212,3 +212,18 @@ exports.getRecentSeasonTicket = (userId, res) => {
       });
     });
 };
+
+exports.getAllSeasonTicket = (res) => {
+  SeasonTicket.find()
+    .populate("applicationId", "stations nic fullName")
+    .then((data) => {
+      res.status(200).json(data);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({
+        code: 1000,
+        message: "Error retrieving season tickets",
+      });
+    });
+};

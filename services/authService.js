@@ -6,7 +6,10 @@ const { USER_ROLES } = require("../config/constant");
 const { sendEmail } = require("../helpers/EmailHelper");
 
 const sendOTP = (user, res) => {
-  const otp = "0000"; // Math.floor(1000 + Math.random() * 9000);
+  const otp = "0000";
+  // user.email === "neluwelcm@gmail.com"
+  //   ? Math.floor(1000 + Math.random() * 9000)
+  //   : "0000";
   user.otp = otp.toString();
   user.otpExpireAt = moment().add(5, "minutes").toDate();
 
@@ -14,7 +17,9 @@ const sendOTP = (user, res) => {
     .save()
     .then(async () => {
       // send email
-      // await sendEmail(user.email, otp.toString());
+      // if (user?.email === "neluwelcm@gmail.com") {
+      //   await sendEmail(user.email, "OTP", `Your OTP is ${otp}`);
+      // }
 
       res.status(200).json({ message: "OTP has been sent to the given email" });
     })
@@ -98,8 +103,9 @@ exports.userSignUp = (data, res) => {
           .save()
           .then(async () => {
             // send email
-            await sendEmail("nlc.madhushanka@gmail.com", otp.toString());
-
+            // if (user?.email === "neluwelcm@gmail.com") {
+            //   await sendEmail(user.email, "OTP", `Your OTP is ${otp}`);
+            // }
             res
               .status(200)
               .json({ message: "OTP has been sent to the given email" });

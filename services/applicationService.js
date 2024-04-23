@@ -6,6 +6,7 @@ const User = require("../models/userModel");
 const { uploadFile } = require("../helpers/S3Helper");
 const { readFileSync } = require("fs");
 const { APPLICATION_STATUSES, FLOWS } = require("../config/constant");
+const { sendEmail } = require("../helpers/EmailHelper");
 
 exports.applyForSeasonTicket = (req, res) => {
   const form = new formidable.IncomingForm({
@@ -196,8 +197,6 @@ exports.updateSeasonTicket = (req, res) => {
       }
     }
 
-    console.log({ fields });
-
     Application.findOne({ _id: fields.applicationId[0] })
       .then((application) => {
         application.fullName = fields.fullName[0];
@@ -281,7 +280,7 @@ exports.updateSeasonTicket = (req, res) => {
 
 exports.acceptOrRejectApplication = (id, status, note, res) => {
   SeasonTicket.findOne({ _id: id })
-    .exec()
+    .populate("userId", "email")
     .then((sTicket) => {
       sTicket.status = status;
 
@@ -304,10 +303,32 @@ exports.acceptOrRejectApplication = (id, status, note, res) => {
         ];
       }
 
+      console.log({ sTicket });
+
       sTicket
         .save()
-        .then((data) => {
+        .then(async (data) => {
           res.status(200).json(data);
+
+          try {
+            if (sTicket?.userId?.email === "neluwelcm@gmail.com") {
+              if (status === APPLICATION_STATUSES.APPLICATION_REJECTED) {
+                await sendEmail(
+                  sTicket?.userId?.email,
+                  "Application Rejected",
+                  `Your application has been rejected. Season ticket ID is ${sTicket?._id}.`
+                );
+              } else {
+                await sendEmail(
+                  sTicket?.userId?.email,
+                  "Application Approved",
+                  `Your application has been approved. Season ticket ID is ${sTicket?._id}.`
+                );
+              }
+            }
+          } catch (err) {
+            console.log(err);
+          }
         })
         .catch((err) => {
           res.status(400).json(err);
@@ -465,7 +486,6 @@ exports.uploadBankSlip = (req, res) => {
 };
 
 exports.acceptOrRejectPayment = (id, status, note, res) => {
-  console.log({ id, status, note });
   SeasonTicket.findOne({ _id: id })
     .then((sTicket) => {
       sTicket.status = status;
@@ -496,8 +516,6 @@ exports.acceptOrRejectPayment = (id, status, note, res) => {
         .save()
         .then(() => {
           if (status === APPLICATION_STATUSES.ACTIVE) {
-            console.log("sTicket.userId", sTicket.userId);
-            console.log("sTicket.userId", sTicket.userId.toString());
             this.generateQRCode(sTicket.userId.toString(), res);
           } else {
             res.status(200).json("Payment rejected");

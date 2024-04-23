@@ -6,13 +6,13 @@ const mg = mailgun.client({
   key: process.env.MAILGUN_API_KEY,
 });
 
-exports.sendEmail = (email, otp) => {
+exports.sendEmail = (email, subject, message) => {
   mg.messages
     .create(process.env.MAILGUN_DOMAIN, {
       from: "RSTBS <rstbs@gmail.com>",
       to: [email],
-      subject: "OTP for login",
-      text: `Your OTP for login is ${otp}`,
+      subject,
+      text: message,
     })
     .then((msg) => console.log(msg)) // logs response data
     .catch((err) => console.log(err)); // logs any error
